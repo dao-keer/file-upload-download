@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"log"
-
 	"github.com/astaxie/beego"
 )
 
@@ -21,11 +19,15 @@ type res struct {
 func (c *UploadController) SaveFileByForm() {
 	f, h, err := c.GetFile("saveFileByForm")
 	if err != nil {
-		log.Fatal("getfile err ", err)
+		c.Ctx.WriteString("<script type='text/javascript'>parent.showRes('failed')</script>")
 	}
 	defer f.Close()
-	c.SaveToFile("saveFileByForm", "./files/"+h.Filename) // 保存位置在 static/upload, 没有文件夹要先创建
+	err = c.SaveToFile("saveFileByForm", "./files/"+h.Filename) // 保存位置在 static/upload, 没有文件夹要先创建
+	if err != nil {
+		c.Ctx.WriteString("<script type='text/javascript'>parent.showRes('failed')</script>")
+	}
 	result := res{"success", 200}
 	c.Data["json"] = &result
-	c.ServeJSON()
+	// c.ServeJSON()
+	c.Ctx.WriteString("<script type='text/javascript'>parent.showRes('success')</script>")
 }
