@@ -12,4 +12,5 @@ func init() {
 	beego.Router("/api/saveFileByFormNoFresh", &controllers.UploadController{}, "post:SaveFileByFormNoFresh")
 	beego.Router("/api/saveFileByAxios", &controllers.UploadController{}, "post:SaveFileByAxios")
 	beego.Router("/api/saveFileByAjaxForm", &controllers.UploadController{}, "post:SaveFileByAjaxForm")
+	beego.Router("/api/saveFileByFileReader", &controllers.UploadController{}, "post:SaveFileByFileReader")
 }
