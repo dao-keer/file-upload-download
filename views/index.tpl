@@ -48,6 +48,15 @@
         </form>
       </li>
     </ul>
+    <br />
+    <ul>
+      <li>
+        <a href="../static/files/5.jpg" download>5.jpg</a> 
+      </li>
+      <li>
+        <a href="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1547123919076&di=87ac2ae59783d6c0e237cf948dedf1c3&imgtype=0&src=http%3A%2F%2Fent.chinadaily.com.cn%2Fimg%2Fattachement%2Fjpg%2Fsite1%2F20140829%2F0023ae72898c156a8c502b.JPG" download>girl.jpg</a>
+      </li>
+    </ul>
   </header>
   <script src="/static/js/reload.min.js"></script>
   <script src="/static/js/axios.min.js"></script>
@@ -152,6 +161,7 @@
                 var res = JSON.parse(xhr.response)
                 if (res.Code === 200) {
                   self.showMessage('上传成功', 'success')
+                  clearValueById('saveFileByFileReader')
                 } else {
                   self.showMessage(res.Msg, 'error')
                 }

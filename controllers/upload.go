@@ -87,7 +87,7 @@ func (c *UploadController) SaveFileByForm() {
 			c.Ctx.WriteString(v.Filename + " upload failed\r\n")
 		}
 		//create destination file making sure the path is writeable.
-		dst, err := os.Create("./files/" + files[i].Filename)
+		dst, err := os.Create("./static/files/" + files[i].Filename)
 		defer dst.Close()
 		if err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
@@ -119,7 +119,7 @@ func (c *UploadController) SaveFileByFormNoFresh() {
 			continue
 		}
 		//create destination file making sure the path is writeable.
-		dst, err := os.Create("./files/" + files[i].Filename)
+		dst, err := os.Create("./static/files/" + files[i].Filename)
 		defer dst.Close()
 		if err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
@@ -155,7 +155,7 @@ func (c *UploadController) SaveFileByAjaxForm() {
 			continue
 		}
 		//create destination file making sure the path is writeable.
-		dst, err := os.Create("./files/" + files[i].Filename)
+		dst, err := os.Create("./static/files/" + files[i].Filename)
 		defer dst.Close()
 		if err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
@@ -193,7 +193,7 @@ func (c *UploadController) SaveFileByAxios() {
 			continue
 		}
 		//create destination file making sure the path is writeable.
-		dst, err := os.Create("./files/" + files[i].Filename)
+		dst, err := os.Create("./static/files/" + files[i].Filename)
 		defer dst.Close()
 		if err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
@@ -225,7 +225,7 @@ func (c *UploadController) SaveFileByFileReader() {
 	}
 	log.Print(filesObj)
 	fileName := filesObj.Name
-	dst, err := os.Create("./files/" + fileName)
+	dst, err := os.Create("./static/files/" + fileName)
 	defer dst.Close()
 	if err != nil {
 		http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)

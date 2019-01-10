@@ -43,6 +43,6 @@ func createDic(dicName string) {
 }
 
 func main() {
-	createDic("./files")
+	createDic("./static/files")
 	beego.Run()
 }
