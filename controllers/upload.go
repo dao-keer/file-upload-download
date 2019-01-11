@@ -17,17 +17,6 @@ type UploadController struct {
 	beego.Controller
 }
 
-// Res Res
-type res struct {
-	Msg  string
-	Code int
-}
-
-type fileObj struct {
-	Name string
-	Data []byte
-}
-
 // IEVersion IEVersion
 func IEVersion(userAgent string) string {
 	isIE := false
