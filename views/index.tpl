@@ -67,6 +67,10 @@
           <button type="submit">下载</button>
         </form>
       </li>
+      <li>
+        <p>从接口读取流，下载, 不支持IE9及以下</p>
+        <p v-for='(f, i) in fileList' :key='i'>{{f}}<button type="button" @click="downfile(f)">下载</button></p>
+      </li>
     </ul>
   </header>
   <script src="/static/js/polyfill.js"></script>
@@ -209,6 +213,29 @@
               self.fileList = response.data.Data.FilesList
             }else{
               self.showMessage('更新文件列表失败', 'error')
+            }
+          })
+          .catch(function (error) {
+            self.showMessage('网络或者服务异常', 'error')
+          });
+        },
+        downfile: function(FileName) {
+          var self = this
+          axios.get('/api/getFile?FileName=' + encodeURI(FileName),  {responseType: 'blob'})
+          .then(function (response) {
+            var blob = response.data
+            if (window.navigator.msSaveOrOpenBlob) {
+              navigator.msSaveBlob(blob, FileName);
+            } else {
+              blob.type = "application/octet-stream";
+              var url = URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              a.href = url;
+              a.download = FileName;
+              var evt = document.createEvent("MouseEvents");  
+              evt.initEvent("click",true,true);  
+              a.dispatchEvent(evt);
+              window.URL.revokeObjectURL(url);
             }
           })
           .catch(function (error) {
