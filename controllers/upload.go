@@ -207,12 +207,10 @@ func (c *UploadController) SaveFileByFileReader() {
 	var result res
 	var filesObj fileObj
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &filesObj); err != nil {
-		log.Print(err)
 		result = res{"json Unmarshal falied", 420}
 		c.Data["json"] = &result
 		c.ServeJSON()
 	}
-	log.Print(filesObj)
 	fileName := filesObj.Name
 	dst, err := os.Create("./static/files/" + fileName)
 	defer dst.Close()
