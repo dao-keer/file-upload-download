@@ -43,7 +43,7 @@
       <li>
         <p>表单上传文件，axios，FileReader(arrayBuffer, 文件MB级别就有点卡顿了)</p>
         <form name='formAxios'>
-          <input type="file" id='saveFileByFileReader' name="saveFileByForm" multiple="multiple" />
+          <input type="file" id='saveFileByFileReader' name="saveFileByForm" />
           <button type="button" @click='submitFileReaderHandle'>上传</button>
         </form>
       </li>
@@ -52,8 +52,8 @@
     <ul>
       <li>
         <p>a标签配合download属性（这里我是将文件写在程序内部的静态资源目录里了，当然实际项目中不能这么做）</p>
-        <p>下载自己上传的图片（IE会开启新的tab页预览，chrome和firefox能下载）</p>
-        <p>下载自己上传的非图片文件（都能下载）</p>
+        <p>下载自己上传的图片或者txt文档（IE会预览，chrome和firefox能下载）</p>
+        <p>下载自己上传的office文件、pdf等（都能下载）</p>
         <p v-for='(f, i) in fileList' :key='i'><a :href="'../static/files/' + f" download>{{f}}</a> </p>
       </li>
       <li>
@@ -71,6 +71,11 @@
         <p>从接口读取流，下载, 不支持IE9及以下</p>
         <p v-for='(f, i) in fileList' :key='i'>{{f}}<button type="button" @click="downfile(f)">下载</button></p>
       </li>
+      <li>
+        <p>利用iframe下载</p>
+        <iframe name="downloadIframe" style="display:none;"></iframe>
+        <p v-for='(f, i) in fileList' :key='i'>{{f}}<button type="button" @click="downfileByIframe(f)">下载</button></p>
+      </li>
     </ul>
   </header>
   <script src="/static/js/polyfill.js"></script>
@@ -82,12 +87,13 @@
   <script src="/static/js/jqueryForm.js"></script>
   <script>
     var showMessageFunc = null;
+    function clearValueById(id) {
+      var file = document.getElementById(id)
+      file.outerHTML = file.outerHTML;
+    }
     function showRes (msg, type) {
       clearValueById('saveFileByFormNoFresh');
       showMessageFunc(msg, type);
-    }
-    function clearValueById(id) {
-      document.getElementById(id).value = ''
     }
     var app = new Vue({
       el: '#app',
@@ -119,7 +125,7 @@
                 res = JSON.parse(data.match(/\{[^\}]+\}/)[0])
               }
               if (res.Code === 200) {
-                self.showMessage('上传成功', 'success')
+                self.showMessage(res.Msg, 'success')
                 self.getFilesList()
               } else {
                 self.showMessage(res.Msg, 'error')
@@ -146,7 +152,7 @@
             })
             .then(function (response) {
               if (response.data.Code === 200) {
-                self.showMessage('上传成功', 'success')
+                self.showMessage(response.data.Msg, 'success')
                 self.getFilesList()
               } else {
                 self.showMessage(response.data.Msg, 'error')
@@ -164,9 +170,12 @@
         submitFileReaderHandle: function() {
           try{
             var filesList = document.getElementById("saveFileByFileReader").files;
-          
-            for (var i = 0; i < filesList.length; i++) {
-              this.FileUpload(filesList[i]);
+            if (filesList.length) {
+              for (var i = 0; i < filesList.length; i++) {
+                this.FileUpload(filesList[i]);
+              }
+            } else {
+              this.showMessage('GetFile failed', 'error')
             }
           }
           catch(err){
@@ -182,7 +191,7 @@
               if(xhr.status==200){
                 var res = JSON.parse(xhr.response)
                 if (res.Code === 200) {
-                  self.showMessage('上传成功', 'success')
+                  self.showMessage(res.Msg, 'success')
                   clearValueById('saveFileByFileReader')
                   self.getFilesList()
                 } else {
@@ -207,7 +216,7 @@
         },
         getFilesList: function(){
           var self = this
-          axios.get('/api/getFilesList')
+          axios.get('/api/getFilesList?t='+(new Date()).getTime())
           .then(function (response) {
             if (response.data.Code === 200) {
               self.fileList = response.data.Data.FilesList
@@ -223,24 +232,32 @@
           var self = this
           axios.get('/api/getFile?FileName=' + encodeURI(FileName),  {responseType: 'blob'})
           .then(function (response) {
-            var blob = response.data
-            if (window.navigator.msSaveOrOpenBlob) {
-              navigator.msSaveBlob(blob, FileName);
-            } else {
-              blob.type = "application/octet-stream";
-              var url = URL.createObjectURL(blob);
-              var a = document.createElement('a');
-              a.href = url;
-              a.download = FileName;
-              var evt = document.createEvent("MouseEvents");  
-              evt.initEvent("click",true,true);  
-              a.dispatchEvent(evt);
-              window.URL.revokeObjectURL(url);
+            try {
+              var blob = response.data
+              if (window.navigator.msSaveOrOpenBlob) {
+                navigator.msSaveBlob(blob, FileName);
+              } else {
+                blob.type = "application/octet-stream";
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = FileName;
+                var evt = document.createEvent("MouseEvents");  
+                evt.initEvent("click",true,true);  
+                a.dispatchEvent(evt);
+                window.URL.revokeObjectURL(url);
+              }
+            }catch(err){
+              self.showMessage('不支持', 'error')
             }
           })
           .catch(function (error) {
             self.showMessage('网络或者服务异常', 'error')
           });
+        },
+        downfileByIframe: function(FileName) {
+          var elemIF = window.frames['downloadIframe'].frameElement;
+          elemIF.src = '/api/getFile?FileName=' + encodeURI(FileName);
         }
       }
     })

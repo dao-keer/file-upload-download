@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -65,29 +66,34 @@ func (c *UploadController) SaveFileByForm() {
 	// GetFiles return multi-upload files
 	files, err := c.GetFiles("saveFileByForm")
 	if err != nil {
-		c.Ctx.WriteString("GetFiles failed")
+		c.Ctx.WriteString("GetFile failed")
 	}
-	for i, v := range files {
+	for _, v := range files {
+		_, fileName := filepath.Split(v.Filename)
 		//for each fileheader, get a handle to the actual file
-		file, err := files[i].Open()
+		file, err := v.Open()
 		defer file.Close()
 		if err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-			c.Ctx.WriteString(v.Filename + " upload failed\r\n")
+			c.Ctx.WriteString(fileName + " upload failed\r\n")
+			continue
 		}
 		//create destination file making sure the path is writeable.
-		dst, err := os.Create("./static/files/" + files[i].Filename)
+		dst, err := os.Create("./static/files/" + fileName)
 		defer dst.Close()
 		if err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-			c.Ctx.WriteString(v.Filename + " upload failed\r\n")
+			c.Ctx.WriteString(fileName + " upload failed\r\n")
+			continue
 		}
 		//copy the uploaded file to the destination file
 		if _, err := io.Copy(dst, file); err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-			c.Ctx.WriteString(v.Filename + " upload failed\r\n")
+			c.Ctx.WriteString(fileName + " upload failed\r\n")
+			continue
 		}
-		c.Ctx.WriteString(v.Filename + " upload success\r\n")
+		log.Print(fileName)
+		c.Ctx.WriteString(fileName + " upload success\r\n")
 	}
 }
 
@@ -96,32 +102,34 @@ func (c *UploadController) SaveFileByFormNoFresh() {
 	var scriptsStr string
 	files, err := c.GetFiles("saveFileByForm")
 	if err != nil {
-		c.Ctx.WriteString("<script type='text/javascript'>parent.showRes('GetFiles failed', 'error')</script>")
+		c.Ctx.WriteString("<script type='text/javascript'>parent.showRes('GetFile failed', 'error')</script>")
+		return
 	}
-	for i, v := range files {
+	for _, v := range files {
+		_, fileName := filepath.Split(v.Filename)
 		//for each fileheader, get a handle to the actual file
-		file, err := files[i].Open()
+		file, err := v.Open()
 		defer file.Close()
 		if err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-			scriptsStr += v.Filename + " upload failed "
+			scriptsStr += fileName + " upload failed "
 			continue
 		}
 		//create destination file making sure the path is writeable.
-		dst, err := os.Create("./static/files/" + files[i].Filename)
+		dst, err := os.Create("./static/files/" + fileName)
 		defer dst.Close()
 		if err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-			scriptsStr += v.Filename + " upload failed "
+			scriptsStr += fileName + " upload failed "
 			continue
 		}
 		//copy the uploaded file to the destination file
 		if _, err := io.Copy(dst, file); err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-			scriptsStr += v.Filename + " upload failed "
+			scriptsStr += fileName + " upload failed "
 			continue
 		}
-		scriptsStr += v.Filename + " upload success "
+		scriptsStr += fileName + " upload success "
 	}
 	c.Ctx.WriteString("<script type='text/javascript'>parent.showRes('" + scriptsStr + "', 'success')</script>")
 }
@@ -131,33 +139,34 @@ func (c *UploadController) SaveFileByAjaxForm() {
 	var resStr string
 	files, err := c.GetFiles("saveFileByForm")
 	if err != nil {
-		str, _ := json.Marshal(res{"GetFile falied", 420})
+		str, _ := json.Marshal(res{"GetFile failed", 420})
 		c.Ctx.WriteString(string(str[:]))
 	}
-	for i, v := range files {
+	for _, v := range files {
+		_, fileName := filepath.Split(v.Filename)
 		//for each fileheader, get a handle to the actual file
-		file, err := files[i].Open()
+		file, err := v.Open()
 		defer file.Close()
 		if err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-			resStr += v.Filename + " upload failed "
+			resStr += fileName + " upload failed "
 			continue
 		}
 		//create destination file making sure the path is writeable.
-		dst, err := os.Create("./static/files/" + files[i].Filename)
+		dst, err := os.Create("./static/files/" + fileName)
 		defer dst.Close()
 		if err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-			resStr += v.Filename + " upload failed "
+			resStr += fileName + " upload failed "
 			continue
 		}
 		//copy the uploaded file to the destination file
 		if _, err := io.Copy(dst, file); err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-			resStr += v.Filename + " upload failed "
+			resStr += fileName + " upload failed "
 			continue
 		}
-		resStr += v.Filename + " upload success "
+		resStr += fileName + " upload success "
 	}
 	str, _ := json.Marshal(res{resStr, 200})
 	c.Ctx.WriteString(string(str[:]))
@@ -168,34 +177,35 @@ func (c *UploadController) SaveFileByAxios() {
 	var result res
 	files, err := c.GetFiles("saveFileByForm")
 	if err != nil {
-		result = res{"GetFile falied", 420}
+		result = res{"GetFile failed", 420}
 		c.Data["json"] = &result
 		c.ServeJSON()
 	}
-	for i, v := range files {
+	for _, v := range files {
+		_, fileName := filepath.Split(v.Filename)
 		//for each fileheader, get a handle to the actual file
-		file, err := files[i].Open()
+		file, err := v.Open()
 		defer file.Close()
 		if err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-			result.Msg += v.Filename + " upload failed "
+			result.Msg += fileName + " upload failed "
 			continue
 		}
 		//create destination file making sure the path is writeable.
-		dst, err := os.Create("./static/files/" + files[i].Filename)
+		dst, err := os.Create("./static/files/" + fileName)
 		defer dst.Close()
 		if err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-			result.Msg += v.Filename + " upload failed "
+			result.Msg += fileName + " upload failed "
 			continue
 		}
 		//copy the uploaded file to the destination file
 		if _, err := io.Copy(dst, file); err != nil {
 			http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-			result.Msg += v.Filename + " upload failed "
+			result.Msg += fileName + " upload failed "
 			continue
 		}
-		result.Msg += v.Filename + " upload success "
+		result.Msg += fileName + " upload success "
 	}
 	result.Code = 200
 	c.Data["json"] = &result
@@ -207,7 +217,7 @@ func (c *UploadController) SaveFileByFileReader() {
 	var result res
 	var filesObj fileObj
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &filesObj); err != nil {
-		result = res{"json Unmarshal falied", 420}
+		result = res{"json Unmarshal failed", 420}
 		c.Data["json"] = &result
 		c.ServeJSON()
 	}
@@ -216,14 +226,15 @@ func (c *UploadController) SaveFileByFileReader() {
 	defer dst.Close()
 	if err != nil {
 		http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-		result.Msg += fileName + " upload failed "
+		result.Msg = fileName + " upload failed "
 	}
 	//copy the uploaded file to the destination file
 	if _, err := io.WriteString(dst, string(filesObj.Data)); err != nil {
 		http.Error(c.Ctx.ResponseWriter, err.Error(), http.StatusInternalServerError)
-		result.Msg += fileName + " upload failed "
+		result.Msg = fileName + " upload failed "
 	}
 	result.Code = 200
+	result.Msg = fileName + " upload success "
 	c.Data["json"] = &result
 	c.ServeJSON()
 }
