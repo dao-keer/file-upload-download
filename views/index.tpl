@@ -34,7 +34,7 @@
         <p>表单上传文件，jqueryForm(ajax+iframe)</p>
         <p>优点: 所有浏览器均支持该方式</p>
         <p>问题点：jqueryForm采用了FormData技术结合form的降级方案，后台返回值需要做兼容处理，IE9下返回的json信息会变成json文件下载</p>
-        <form id='ajaxForm'>
+        <form id='ajaxForm' enctype="multipart/form-data">
           <input type="file" id='saveFileByAjaxForm' name="saveFileByForm" multiple="multiple" />
           <button type="button" @click='submitAjaxFormHandle'>上传</button>
         </form>

@@ -67,6 +67,7 @@ func (c *UploadController) SaveFileByForm() {
 	files, err := c.GetFiles("saveFileByForm")
 	if err != nil {
 		c.Ctx.WriteString("GetFile failed")
+		return
 	}
 	for _, v := range files {
 		_, fileName := filepath.Split(v.Filename)
@@ -141,6 +142,7 @@ func (c *UploadController) SaveFileByAjaxForm() {
 	if err != nil {
 		str, _ := json.Marshal(res{"GetFile failed", 420})
 		c.Ctx.WriteString(string(str[:]))
+		return
 	}
 	for _, v := range files {
 		_, fileName := filepath.Split(v.Filename)
@@ -180,6 +182,7 @@ func (c *UploadController) SaveFileByAxios() {
 		result = res{"GetFile failed", 420}
 		c.Data["json"] = &result
 		c.ServeJSON()
+		return
 	}
 	for _, v := range files {
 		_, fileName := filepath.Split(v.Filename)
@@ -220,6 +223,7 @@ func (c *UploadController) SaveFileByFileReader() {
 		result = res{"json Unmarshal failed", 420}
 		c.Data["json"] = &result
 		c.ServeJSON()
+		return
 	}
 	fileName := filesObj.Name
 	dst, err := os.Create("./static/files/" + fileName)
@@ -237,4 +241,5 @@ func (c *UploadController) SaveFileByFileReader() {
 	result.Msg = fileName + " upload success "
 	c.Data["json"] = &result
 	c.ServeJSON()
+	return
 }
