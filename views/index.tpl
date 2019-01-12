@@ -61,7 +61,7 @@
     <br />
     <ul>
       <li>
-        <p>a标签配合download属性（这里我是将文件写在程序内部的静态资源目录里了，当然实际项目中不能这么做）</p>
+        <p>a标签配合download属性</p>
         <p>下载自己上传的图片或者txt文档（IE下能直接打开的文件都会预览，chrome和firefox能下载）</p>
         <p>下载自己上传的office文件、pdf等（都能下载）</p>
         <p v-for='(f, i) in fileList' :key='i'><a :href="'../static/files/' + f" download>{{f}}</a> </p>
