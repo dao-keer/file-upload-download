@@ -12,14 +12,18 @@
   <header id='app'>
     <ul>
       <li>
-        <p>表单上传文件</p>
+        <p>表单上传文件（设置form的action，method，enctype属性）</p>
+        <p>优点: 所有浏览器均支持该方式</p>
+        <p>缺点：上传后，页面会发生跳转，如果需求本身在上传文件成功或者失败后会跳转到新页面可以采用</p>
         <form action="/api/saveFileByForm" method="post" enctype="multipart/form-data">
           <input type="file" name="saveFileByForm" multiple="multiple" />
           <button type="submit">上传</button>
         </form>
       </li>
       <li>
-        <p>表单上传文件，iframe提示(模拟类似ajax等异步上传，IE9及以下)</p>
+        <p>表单上传文件，iframe捕获返回提示（设置form的action，method，enctype属性）</p>
+        <p>优点: 所有浏览器均支持该方式</p>
+        <p>缺点：需要后台配合，返回js脚本，通过iframe去处理结果，调用第三方接口可能没法配合</p>
         <form action="/api/saveFileByFormNoFresh" method="post" enctype="multipart/form-data" target="stop_route">
           <input type="file" id='saveFileByFormNoFresh' name="saveFileByForm" multiple="multiple" />
           <button type="submit">上传</button>
@@ -28,20 +32,26 @@
       </li>
       <li>
         <p>表单上传文件，jqueryForm(ajax+iframe)</p>
-        <form id='ajaxForm' method="post" enctype="multipart/form-data">
+        <p>优点: 所有浏览器均支持该方式</p>
+        <p>问题点：jqueryForm采用了blob技术结合form的降级方案，后台返回值需要做兼容处理，IE9下返回的json信息会变成json文件下载</p>
+        <form id='ajaxForm'>
           <input type="file" id='saveFileByAjaxForm' name="saveFileByForm" multiple="multiple" />
           <button type="button" @click='submitAjaxFormHandle'>上传</button>
         </form>
       </li>
       <li>
-        <p>表单上传文件，axios，FormData(elementUI的上传也是基于这个对象完成的，不支持IE9)</p>
+        <p>表单上传文件，axios，FormData</p>
+        <p>优点: 有elementui封装好的插件可用</p>
+        <p>问题点：不支持FormData对象的浏览器不可用</p>
         <form name='formAxios'>
           <input type="file" id='saveFileByAxios' name="saveFileByForm" multiple="multiple" />
           <button type="button" @click='submitAxiosHandle'>上传</button>
         </form>
       </li>
       <li>
-        <p>表单上传文件，axios，FileReader(arrayBuffer, 文件MB级别就有点卡顿了)</p>
+        <p>表单上传文件，axios，FileReader(arrayBuffer)</p>
+        <p>优点: 不清楚</p>
+        <p>问题点：文件大小在MB级别就有点卡顿了</p>
         <form name='formAxios'>
           <input type="file" id='saveFileByFileReader' name="saveFileByForm" />
           <button type="button" @click='submitFileReaderHandle'>上传</button>
@@ -52,7 +62,7 @@
     <ul>
       <li>
         <p>a标签配合download属性（这里我是将文件写在程序内部的静态资源目录里了，当然实际项目中不能这么做）</p>
-        <p>下载自己上传的图片或者txt文档（IE会预览，chrome和firefox能下载）</p>
+        <p>下载自己上传的图片或者txt文档（IE下能直接打开的文件都会预览，chrome和firefox能下载）</p>
         <p>下载自己上传的office文件、pdf等（都能下载）</p>
         <p v-for='(f, i) in fileList' :key='i'><a :href="'../static/files/' + f" download>{{f}}</a> </p>
       </li>
@@ -61,7 +71,7 @@
         <a href="https://common.cnblogs.com/images/wechat.png" download>第三方图片</a>
       </li>
       <li>
-        <p>form表单实现下载</p>
+        <p>form表单实现下载（表现稳定）</p>
         <form v-for='(f, i) in fileList' :key='i' action="../api/getFile" method="GET">
           <input type="text" name='FileName' style="border:none;" readonly :value='f' />
           <button type="submit">下载</button>
@@ -72,7 +82,7 @@
         <p v-for='(f, i) in fileList' :key='i'>{{f}}<button type="button" @click="downfile(f)">下载</button></p>
       </li>
       <li>
-        <p>利用iframe下载</p>
+        <p>利用iframe下载（表现稳定）</p>
         <iframe name="downloadIframe" style="display:none;"></iframe>
         <p v-for='(f, i) in fileList' :key='i'>{{f}}<button type="button" @click="downfileByIframe(f)">下载</button></p>
       </li>
@@ -119,11 +129,7 @@
           var option = {
             url: '/api/saveFileByAjaxForm',
             type: 'POST',
-            success: function(data) {
-              var res
-              if (data && data.match(/\{[^\}]+\}/)[0]) {
-                res = JSON.parse(data.match(/\{[^\}]+\}/)[0])
-              }
+            success: function(res) {
               if (res.Code === 200) {
                 self.showMessage(res.Msg, 'success')
                 self.getFilesList()
